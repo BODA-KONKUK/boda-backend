@@ -1,6 +1,8 @@
 import {
+  Body,
   Controller,
   Get,
+  Param,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -24,5 +26,23 @@ export class AppController {
     console.log('file', file);
 
     return this.appService.fileUpload(file);
+  }
+
+  @Post('/api/list')
+  async create(@Body() createUserDto: any) {
+    return await this.appService.create(createUserDto);
+  }
+
+  @Get('/api/list/:id')
+  async getOne(
+    @Param('id')
+    id: string,
+  ) {
+    return await this.appService.getOne(id);
+  }
+
+  @Get('/api/list')
+  async list() {
+    return await this.appService.getAll();
   }
 }
