@@ -28,12 +28,12 @@ export class AppController {
     return this.appService.fileUpload(file);
   }
 
-  @Post('/api/list')
+  @Post('/api/user')
   async create(@Body() createUserDto: any) {
     return await this.appService.create(createUserDto);
   }
 
-  @Get('/api/list/:id')
+  @Get('/api/user/:id')
   async getOne(
     @Param('id')
     id: string,
@@ -41,7 +41,7 @@ export class AppController {
     return await this.appService.getOne(id);
   }
 
-  @Get('/api/list')
+  @Get('/api/user')
   async list() {
     return await this.appService.getAll();
   }
