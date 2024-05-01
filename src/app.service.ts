@@ -3,8 +3,13 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { ConfigService } from '@nestjs/config';
 import * as mimeTypes from 'mime-types';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Board } from './board.entity';
+import { Repository } from 'typeorm';
 @Injectable()
 export class AppService {
+  @InjectRepository(Board)
+  private boardRepository: Repository<Board>;
   private s3Client: S3Client;
 
   getHello(): string {
@@ -43,5 +48,23 @@ export class AppService {
       console.error('Error uploading file:', error);
       throw error;
     }
+  }
+
+  async create(createUserDto: any) {
+    const user = await this.boardRepository.create({
+      title: createUserDto.title,
+      content: createUserDto.content,
+      writer: createUserDto.writer,
+    });
+
+    return await this.boardRepository.save(user);
+  }
+
+  async getOne(userId: string) {
+    return await this.boardRepository.findOne({ where: { id: +userId } });
+  }
+
+  async getAll() {
+    return await this.boardRepository.find();
   }
 }
