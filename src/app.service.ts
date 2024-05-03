@@ -67,4 +67,28 @@ export class AppService {
   async getAll() {
     return await this.boardRepository.find();
   }
+
+  async delete(id: string) {
+    const post = await this.boardRepository.findOne({ where: { id: +id } });
+
+    if (!post) {
+      throw new Error('Post not found');
+    }
+
+    return await this.boardRepository.remove(post);
+  }
+
+  async update(id: string, updateBoardDto: any) {
+    const post = await this.boardRepository.findOne({ where: { id: +id } });
+
+    if (!post) {
+      throw new Error('Post not found');
+    }
+
+    post.title = updateBoardDto.title;
+    post.content = updateBoardDto.content;
+    post.writer = updateBoardDto.writer;
+
+    return await this.boardRepository.save(post);
+  }
 }

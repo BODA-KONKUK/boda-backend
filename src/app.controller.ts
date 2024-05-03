@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -28,12 +30,12 @@ export class AppController {
     return this.appService.fileUpload(file);
   }
 
-  @Post('/api/user')
+  @Post('/api/post')
   async create(@Body() createUserDto: any) {
     return await this.appService.create(createUserDto);
   }
 
-  @Get('/api/user/:id')
+  @Get('/api/post/:id')
   async getOne(
     @Param('id')
     id: string,
@@ -41,8 +43,18 @@ export class AppController {
     return await this.appService.getOne(id);
   }
 
-  @Get('/api/user')
+  @Patch('/api/post/:id')
+  async update(@Param('id') id: string, @Body() updateBoardDto: any) {
+    return await this.appService.update(id, updateBoardDto);
+  }
+
+  @Get('/api/post')
   async list() {
     return await this.appService.getAll();
+  }
+
+  @Delete('/api/post/:id')
+  async delete(@Param('id') id: string) {
+    return await this.appService.delete(id);
   }
 }
