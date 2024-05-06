@@ -3,13 +3,13 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { ConfigService } from '@nestjs/config';
 import * as mimeTypes from 'mime-types';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Board } from './board.entity';
-import { Repository } from 'typeorm';
+// import { InjectRepository } from '@nestjs/typeorm';
+// import { Board } from './board.entity';
+// import { Repository } from 'typeorm';
 @Injectable()
 export class AppService {
-  @InjectRepository(Board)
-  private boardRepository: Repository<Board>;
+  // @InjectRepository(Board)
+  // private boardRepository: Repository<Board>;
   private s3Client: S3Client;
 
   getHello(): string {
@@ -50,45 +50,45 @@ export class AppService {
     }
   }
 
-  async create(createUserDto: any) {
-    const user = await this.boardRepository.create({
-      title: createUserDto.title,
-      content: createUserDto.content,
-      writer: createUserDto.writer,
-    });
+  // async create(createUserDto: any) {
+  //   const user = await this.boardRepository.create({
+  //     title: createUserDto.title,
+  //     content: createUserDto.content,
+  //     writer: createUserDto.writer,
+  //   });
 
-    return await this.boardRepository.save(user);
-  }
+  //   return await this.boardRepository.save(user);
+  // }
 
-  async getOne(userId: string) {
-    return await this.boardRepository.findOne({ where: { id: +userId } });
-  }
+  // async getOne(userId: string) {
+  //   return await this.boardRepository.findOne({ where: { id: +userId } });
+  // }
 
-  async getAll() {
-    return await this.boardRepository.find();
-  }
+  // async getAll() {
+  //   return await this.boardRepository.find();
+  // }
 
-  async delete(id: string) {
-    const post = await this.boardRepository.findOne({ where: { id: +id } });
+  // async delete(id: string) {
+  //   const post = await this.boardRepository.findOne({ where: { id: +id } });
 
-    if (!post) {
-      throw new Error('Post not found');
-    }
+  //   if (!post) {
+  //     throw new Error('Post not found');
+  //   }
 
-    return await this.boardRepository.remove(post);
-  }
+  //   return await this.boardRepository.remove(post);
+  // }
 
-  async update(id: string, updateBoardDto: any) {
-    const post = await this.boardRepository.findOne({ where: { id: +id } });
+  // async update(id: string, updateBoardDto: any) {
+  //   const post = await this.boardRepository.findOne({ where: { id: +id } });
 
-    if (!post) {
-      throw new Error('Post not found');
-    }
+  //   if (!post) {
+  //     throw new Error('Post not found');
+  //   }
 
-    post.title = updateBoardDto.title;
-    post.content = updateBoardDto.content;
-    post.writer = updateBoardDto.writer;
+  //   post.title = updateBoardDto.title;
+  //   post.content = updateBoardDto.content;
+  //   post.writer = updateBoardDto.writer;
 
-    return await this.boardRepository.save(post);
-  }
+  //   return await this.boardRepository.save(post);
+  // }
 }
