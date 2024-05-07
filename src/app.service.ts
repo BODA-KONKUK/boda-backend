@@ -26,7 +26,11 @@ export class AppService {
     });
   }
 
-  async fileUpload(file: Express.Multer.File) {
+  async fileUpload(files: any) {
+    const file = files[0];
+
+    console.log('file', file);
+
     const contentType =
       mimeTypes.lookup(file.originalname) || 'application/octet-stream';
 

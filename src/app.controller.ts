@@ -10,24 +10,24 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AppService } from './app.service';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
+import { FilesInterceptor } from '@nestjs/platform-express';
+// import { Express } from 'express';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
+  @Get('/hello')
   getHello(): string {
     return this.appService.getHello();
   }
 
   @Post('/upload/file')
-  @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-    console.log('file', file);
+  @UseInterceptors(FilesInterceptor('files'))
+  uploadFile(@UploadedFile() files: any) {
+    console.log('files', files);
 
-    return this.appService.fileUpload(file);
+    return this.appService.fileUpload(files);
   }
 
   // @Post('/api/post')
