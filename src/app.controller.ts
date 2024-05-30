@@ -23,13 +23,15 @@ export class AppController {
     return this.appService.getHello();
   }
 
+  // 질의 응답
   @Post('/question')
-  getQuestion(@Body() body: { text: string }) {
+  async getQuestion(@Body() body: { text: string }) {
     console.log('question: ', body.text);
 
     return `테스트 완료 보낸 질문은 ${body.text}`;
   }
 
+  // 사진 촬영 및 캡셔닝
   @Post('/upload/file')
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
