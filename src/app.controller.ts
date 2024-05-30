@@ -25,7 +25,7 @@ export class AppController {
 
   @Post('/question')
   getQuestion(@Body() body: { textData: string }) {
-    console.log('question: ', body.textData);
+    console.log('question: ', body);
 
     return `question 응답 테스트 완료 보낸 질문은 ${body.textData}`;
   }
