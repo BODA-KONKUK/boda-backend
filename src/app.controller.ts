@@ -9,16 +9,15 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { AppService } from './app.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
+import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): string {
+  async getHello(): Promise<string> {
     console.log('getHello 요청');
     return this.appService.getHello();
   }
