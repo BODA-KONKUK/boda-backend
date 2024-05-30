@@ -1,4 +1,5 @@
 import {
+  Body,
   // Body,
   Controller,
   // Delete,
@@ -20,6 +21,13 @@ export class AppController {
   async getHello(): Promise<string> {
     console.log('getHello 요청');
     return this.appService.getHello();
+  }
+
+  @Post('/question')
+  getQuestion(@Body() body: { textData: string }) {
+    console.log('question: ', body.textData);
+
+    return `question 응답 테스트 완료 보낸 질문은 ${body.textData}`;
   }
 
   @Post('/upload/file')
