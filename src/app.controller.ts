@@ -27,8 +27,8 @@ export class AppController {
   @Post('/question')
   async getQuestion(@Body() body: { text: string }) {
     console.log('question: ', body.text);
-    const responseMessage = `테스트 완료 보낸 질문은 ${body.text}`;
-    return { message: responseMessage };
+
+    return '테스트 완료!!!!';
   }
 
   // 사진 촬영 및 캡셔닝
