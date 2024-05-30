@@ -24,10 +24,10 @@ export class AppController {
   }
 
   @Post('/question')
-  getQuestion(@Body() body: { textData: string }) {
-    console.log('question: ', body);
+  getQuestion(@Body() body: { text: string }) {
+    console.log('question: ', body.text);
 
-    return `question 응답 테스트 완료 보낸 질문은 ${body.textData}`;
+    return `테스트 완료 보낸 질문은 ${body.text}`;
   }
 
   @Post('/upload/file')
