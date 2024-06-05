@@ -8,7 +8,6 @@ import * as fs from 'fs';
 import * as mimeTypes from 'mime-types';
 import * as util from 'util';
 // import { InjectRepository } from '@nestjs/typeorm';
-// import { Board } from './board.entity';
 // import { Repository } from 'typeorm';
 
 @Injectable()
@@ -47,6 +46,32 @@ export class AppService {
     return result;
   }
 
+  async visualQuestionAnswering1() {
+    const hf = new HfInference('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');
+    const vqa = hf.endpoint(
+      'https://wvgrnujoe7nwlw1v.us-east-1.aws.endpoints.huggingface.cloud',
+    );
+
+    const readFile = util.promisify(fs.readFile);
+    const imageBuffer = await readFile('src/hello.png');
+    const base64Image = imageBuffer.toString('base64');
+
+    // const arrayBuffer = imageBuffer.buffer.slice(
+    //   imageBuffer.byteOffset,
+    //   imageBuffer.byteOffset + imageBuffer.byteLength,
+    // );
+
+    const response = await vqa.visualQuestionAnswering({
+      model: 'memegpt/blip2_endpoint',
+      inputs: {
+        question: 'What is written here?',
+        image: base64Image as any,
+      },
+    });
+
+    return response;
+  }
+
   async visualQuestionAnswering() {
     const hf = new HfInference('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');
     const readFile = util.promisify(fs.readFile);
@@ -59,7 +84,7 @@ export class AppService {
     );
 
     const response = await hf.visualQuestionAnswering({
-      model: 'dandelin/vilt-b32-finetuned-vqa',
+      model: 'memegpt/blip2_endpoint',
       inputs: {
         question: 'What is written here?',
         image: arrayBuffer,
@@ -75,8 +100,8 @@ export class AppService {
     // );
     // console.log('answer', JSON.stringify(res));
 
-    const res = await this.visualQuestionAnswering();
-    console.log('answer', JSON.stringify(res));
+    // const res = await this.visualQuestionAnswering1();
+    // console.log('answer', JSON.stringify(res));
 
     return 'Hello World!!';
   }
@@ -97,53 +122,11 @@ export class AppService {
 
     try {
       const result = await upload.done();
-      console.log('File uploaded:', result);
-      return '사진 test 응답';
+      console.log('File uploaded:', result.Location);
+      return result.Location;
     } catch (error) {
       console.error('Error uploading file:', error);
       throw error;
     }
   }
-
-  // async create(createUserDto: any) {
-  //   const user = await this.boardRepository.create({
-  //     title: createUserDto.title,
-  //     content: createUserDto.content,
-  //     writer: createUserDto.writer,
-  //   });
-
-  //   return await this.boardRepository.save(user);
-  // }
-
-  // async getOne(userId: string) {
-  //   return await this.boardRepository.findOne({ where: { id: +userId } });
-  // }
-
-  // async getAll() {
-  //   return await this.boardRepository.find();
-  // }
-
-  // async delete(id: string) {
-  //   const post = await this.boardRepository.findOne({ where: { id: +id } });
-
-  //   if (!post) {
-  //     throw new Error('Post not found');
-  //   }
-
-  //   return await this.boardRepository.remove(post);
-  // }
-
-  // async update(id: string, updateBoardDto: any) {
-  //   const post = await this.boardRepository.findOne({ where: { id: +id } });
-
-  //   if (!post) {
-  //     throw new Error('Post not found');
-  //   }
-
-  //   post.title = updateBoardDto.title;
-  //   post.content = updateBoardDto.content;
-  //   post.writer = updateBoardDto.writer;
-
-  //   return await this.boardRepository.save(post);
-  // }
 }
