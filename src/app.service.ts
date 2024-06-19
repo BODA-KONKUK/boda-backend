@@ -144,7 +144,7 @@ export class AppService {
       inputs: `Translate into Korean: "${questionInEng}". Respond with only "The Answer is: " followed by the translation and nothing else.`,
     })
       .then((response) => {
-        console.log(JSON.stringify(response));
+        // console.log(JSON.stringify(response));
         return response;
       })
       .catch((error) => {
@@ -152,7 +152,7 @@ export class AppService {
       });
   }
 
-  async getHello(question: string): Promise<string> {
+  async vqa(imgUrl: string, question: string): Promise<string> {
     const questionInKor = `${question}`;
     // 한글 -> 영어
     const engText = await this.korToEng(questionInKor);
@@ -169,23 +169,28 @@ export class AppService {
     // const result = finalAnswer.substring(startQuoteIndex, endQuoteIndex);
     // console.log(result);
 
-    // const text = await this.engToKor(questionInEng);
-    // console.log(text);
-    // const answerPrefix = 'The Answer is: ';
-    // const generatedText = text[0].generated_text;
-    // const answerIndex =
-    //   generatedText.lastIndexOf(answerPrefix) + answerPrefix.length;
-    // const finalAnswer = generatedText.substring(answerIndex).trim();
-
-    // console.log('finalAnswer', finalAnswer);
-    const imageUrl =
-      'https://boda-bucket.s3.ap-northeast-2.amazonaws.com/uploads/ko.png';
-
-    const res = await this.visualQuestionAnswering(imageUrl, engText);
+    const res = await this.visualQuestionAnswering(imgUrl, engText);
     console.log('answer', JSON.stringify(res));
 
+    const answerText = res.answer;
+    const startQuoteIndex = answerText.indexOf('"') + 1;
+    const endQuoteIndex = answerText.indexOf('"', startQuoteIndex);
+    const result = answerText.substring(startQuoteIndex, endQuoteIndex);
+
+    console.log('result', result);
+
+    const korAnswer = await this.engToKor(result);
+    console.log(korAnswer);
+    const answerPrefix = 'The Answer is: ';
+    const generatedText = korAnswer[0].generated_text;
+    const answerIndex =
+      generatedText.lastIndexOf(answerPrefix) + answerPrefix.length;
+    const finalAnswer = generatedText.substring(answerIndex).trim();
+
+    console.log('finalAnswer', finalAnswer);
+
     // TODO: 영어 -> 한글
-    return engText;
+    return finalAnswer;
   }
 
   async fileUpload(file: Express.Multer.File) {
