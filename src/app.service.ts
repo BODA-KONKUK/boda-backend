@@ -44,20 +44,20 @@ export class AppService {
     return result;
   }
 
-  async visualQuestionAnswering() {
+  async visualQuestionAnswering(imageUrl: string, question: string) {
     const inference = new HfInference('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');
     const vqa = inference.endpoint(
       'https://g8a7fnx4995stodw.us-east-1.aws.endpoints.huggingface.cloud',
     );
 
-    const imageUrl =
-      'https://boda-bucket.s3.ap-northeast-2.amazonaws.com/uploads/cat.png';
+    // const imageUrl =
+    //   'https://boda-bucket.s3.ap-northeast-2.amazonaws.com/uploads/cat.png';
     const imageres = await fetch(imageUrl);
     const imageBlob = await imageres.blob();
 
     const response = await vqa.visualQuestionAnswering({
       inputs: {
-        question: 'What is in the photo?',
+        question: question,
         image: imageBlob,
       },
     });
@@ -155,19 +155,19 @@ export class AppService {
   async getHello(question: string): Promise<string> {
     const questionInKor = `${question}`;
     // 한글 -> 영어
-    const korText = await this.korToEng(questionInKor);
+    const engText = await this.korToEng(questionInKor);
 
-    const answerPrefix = 'The Answer is: ';
-    const generatedText = korText[0].generated_text;
-    const answerIndex =
-      generatedText.lastIndexOf(answerPrefix) + answerPrefix.length;
-    const finalAnswer = generatedText.substring(answerIndex).trim();
+    // const answerPrefix = 'The Answer is: ';
+    // const generatedText = korText[0].generated_text;
+    // const answerIndex =
+    //   generatedText.lastIndexOf(answerPrefix) + answerPrefix.length;
+    // const finalAnswer = generatedText.substring(answerIndex).trim();
 
-    // 따옴표 사이의 텍스트를 추출하는 부분
-    const startQuoteIndex = finalAnswer.indexOf('"') + 1;
-    const endQuoteIndex = finalAnswer.lastIndexOf('"');
-    const result = finalAnswer.substring(startQuoteIndex, endQuoteIndex);
-    console.log(result);
+    // // 따옴표 사이의 텍스트를 추출하는 부분
+    // const startQuoteIndex = finalAnswer.indexOf('"') + 1;
+    // const endQuoteIndex = finalAnswer.lastIndexOf('"');
+    // const result = finalAnswer.substring(startQuoteIndex, endQuoteIndex);
+    // console.log(result);
 
     // const text = await this.engToKor(questionInEng);
     // console.log(text);
@@ -178,12 +178,14 @@ export class AppService {
     // const finalAnswer = generatedText.substring(answerIndex).trim();
 
     // console.log('finalAnswer', finalAnswer);
+    const imageUrl =
+      'https://boda-bucket.s3.ap-northeast-2.amazonaws.com/uploads/ko.png';
 
-    // const res = await this.visualQuestionAnswering();
-    // console.log('answer', JSON.stringify(res));
+    const res = await this.visualQuestionAnswering(imageUrl, engText);
+    console.log('answer', JSON.stringify(res));
 
     // TODO: 영어 -> 한글
-    return korText;
+    return engText;
   }
 
   async fileUpload(file: Express.Multer.File) {

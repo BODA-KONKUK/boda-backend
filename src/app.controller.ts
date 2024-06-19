@@ -20,13 +20,15 @@ export class AppController {
   @Get()
   async getHello(): Promise<string> {
     console.log('getHello 요청');
-    return this.appService.getHello('저 사람이 어떻게 생겼어?');
+    return this.appService.getHello('what is he doing?');
   }
 
   // 질의 응답
   @Post('/question')
-  async getQuestion(@Body() body: { text: string }) {
-    // console.log('question: ', body.text);
+  async getQuestion(@Body() body: { imgUrl: string; text: string }) {
+    console.log('imgUrl: ', body.imgUrl);
+    console.log('text: ', body.text);
+    console.log('body: ', body);
     const responseMessage = `테스트 완료 보낸 질문은 ${body.text}`;
     return { message: responseMessage }; // JSON 형식으로 반환
   }
