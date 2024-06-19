@@ -20,13 +20,13 @@ export class AppController {
   @Get()
   async getHello(): Promise<string> {
     console.log('getHello 요청');
-    return this.appService.getHello();
+    return this.appService.getHello('저 사람이 어떻게 생겼어?');
   }
 
   // 질의 응답
   @Post('/question')
   async getQuestion(@Body() body: { text: string }) {
-    console.log('question: ', body.text);
+    // console.log('question: ', body.text);
     const responseMessage = `테스트 완료 보낸 질문은 ${body.text}`;
     return { message: responseMessage }; // JSON 형식으로 반환
   }
@@ -35,7 +35,7 @@ export class AppController {
   @Post('/upload/file')
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
-    console.log('file', file);
+    // console.log('file', file);
 
     return this.appService.fileUpload(file);
   }

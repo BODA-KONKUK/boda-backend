@@ -4,9 +4,7 @@ import { HfInference } from '@huggingface/inference';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as fs from 'fs';
 import * as mimeTypes from 'mime-types';
-import * as util from 'util';
 // import { InjectRepository } from '@nestjs/typeorm';
 // import { Repository } from 'typeorm';
 
@@ -46,64 +44,146 @@ export class AppService {
     return result;
   }
 
-  async visualQuestionAnswering1() {
-    const hf = new HfInference('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');
-    const vqa = hf.endpoint(
-      'https://wvgrnujoe7nwlw1v.us-east-1.aws.endpoints.huggingface.cloud',
+  async visualQuestionAnswering() {
+    const inference = new HfInference('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');
+    const vqa = inference.endpoint(
+      'https://g8a7fnx4995stodw.us-east-1.aws.endpoints.huggingface.cloud',
     );
 
-    const readFile = util.promisify(fs.readFile);
-    const imageBuffer = await readFile('src/hello.png');
-    const base64Image = imageBuffer.toString('base64');
-
-    // const arrayBuffer = imageBuffer.buffer.slice(
-    //   imageBuffer.byteOffset,
-    //   imageBuffer.byteOffset + imageBuffer.byteLength,
-    // );
+    const imageUrl =
+      'https://boda-bucket.s3.ap-northeast-2.amazonaws.com/uploads/cat.png';
+    const imageres = await fetch(imageUrl);
+    const imageBlob = await imageres.blob();
 
     const response = await vqa.visualQuestionAnswering({
-      model: 'memegpt/blip2_endpoint',
       inputs: {
-        question: 'What is written here?',
-        image: base64Image as any,
+        question: 'What is in the photo?',
+        image: imageBlob,
       },
     });
 
     return response;
   }
 
-  async visualQuestionAnswering() {
-    const hf = new HfInference('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');
-    const readFile = util.promisify(fs.readFile);
+  async korToEng(questionInKor: string) {
+    async function query(questionInKor) {
+      try {
+        const response = await fetch(
+          'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3',
+          {
+            headers: {
+              Authorization: 'Bearer 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',
+              'Content-Type': 'application/json',
+            },
+            method: 'POST',
+            body: JSON.stringify(questionInKor),
+          },
+        );
 
-    // 'cats.png' 파일을 비동기적으로 읽습니다. 파일 경로는 실제 상황에 맞게 조정해야 합니다.
-    const imageBuffer = await readFile('src/hello.png');
-    const arrayBuffer = imageBuffer.buffer.slice(
-      imageBuffer.byteOffset,
-      imageBuffer.byteOffset + imageBuffer.byteLength,
-    );
+        // Check if the response is ok (status in the range 200-299)
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(
+            `HTTP error! status: ${response.status}, body: ${errorText}`,
+          );
+        }
 
-    const response = await hf.visualQuestionAnswering({
-      model: 'memegpt/blip2_endpoint',
-      inputs: {
-        question: 'What is written here?',
-        image: arrayBuffer,
-      },
-    });
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        console.error('Error during fetching or parsing:', error);
+        throw error;
+      }
+    }
 
-    return response;
+    return await query({
+      inputs: `Translate into English in a sentence: '${questionInKor}'. Respond with only "The Answer is: " followed by the translation and nothing else.' 
+      `,
+    })
+      .then((response) => {
+        // console.log(JSON.stringify(response));
+        return response;
+      })
+      .catch((error) => {
+        console.error('Query failed:', error);
+      });
   }
 
-  async getHello(): Promise<string> {
-    // const res = await this.query(
-    //   'Tell me about the capital of the United States',
-    // );
+  async engToKor(questionInEng: string) {
+    async function query(questionInEng) {
+      try {
+        const response = await fetch(
+          'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3',
+          {
+            headers: {
+              Authorization: 'Bearer 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',
+              'Content-Type': 'application/json',
+            },
+            method: 'POST',
+            body: JSON.stringify(questionInEng),
+          },
+        );
+
+        // Check if the response is ok (status in the range 200-299)
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(
+            `HTTP error! status: ${response.status}, body: ${errorText}`,
+          );
+        }
+
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        console.error('Error during fetching or parsing:', error);
+        throw error;
+      }
+    }
+
+    return await query({
+      inputs: `Translate into Korean: "${questionInEng}". Respond with only "The Answer is: " followed by the translation and nothing else.`,
+    })
+      .then((response) => {
+        console.log(JSON.stringify(response));
+        return response;
+      })
+      .catch((error) => {
+        console.error('Query failed:', error);
+      });
+  }
+
+  async getHello(question: string): Promise<string> {
+    const questionInKor = `${question}`;
+    // 한글 -> 영어
+    const korText = await this.korToEng(questionInKor);
+
+    const answerPrefix = 'The Answer is: ';
+    const generatedText = korText[0].generated_text;
+    const answerIndex =
+      generatedText.lastIndexOf(answerPrefix) + answerPrefix.length;
+    const finalAnswer = generatedText.substring(answerIndex).trim();
+
+    // 따옴표 사이의 텍스트를 추출하는 부분
+    const startQuoteIndex = finalAnswer.indexOf('"') + 1;
+    const endQuoteIndex = finalAnswer.lastIndexOf('"');
+    const result = finalAnswer.substring(startQuoteIndex, endQuoteIndex);
+    console.log(result);
+
+    // const text = await this.engToKor(questionInEng);
+    // console.log(text);
+    // const answerPrefix = 'The Answer is: ';
+    // const generatedText = text[0].generated_text;
+    // const answerIndex =
+    //   generatedText.lastIndexOf(answerPrefix) + answerPrefix.length;
+    // const finalAnswer = generatedText.substring(answerIndex).trim();
+
+    // console.log('finalAnswer', finalAnswer);
+
+    // const res = await this.visualQuestionAnswering();
     // console.log('answer', JSON.stringify(res));
 
-    // const res = await this.visualQuestionAnswering1();
-    // console.log('answer', JSON.stringify(res));
-
-    return 'Hello World!!';
+    // TODO: 영어 -> 한글
+    return korText;
   }
 
   async fileUpload(file: Express.Multer.File) {
@@ -122,8 +202,10 @@ export class AppService {
 
     try {
       const result = await upload.done();
-      console.log('File uploaded:', result.Location);
-      return result.Location;
+      // console.log('File uploaded:', result.Location);
+      // TODO: captioning 연결
+
+      return { imgUrl: result.Location, message: 'caption 결과' };
     } catch (error) {
       console.error('Error uploading file:', error);
       throw error;
