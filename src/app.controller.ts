@@ -38,7 +38,7 @@ export class AppController {
   @Post('/upload/file')
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
-    // console.log('file', file);
+    console.log('file', file);
 
     return this.appService.fileUpload(file);
   }
