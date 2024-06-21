@@ -47,25 +47,34 @@ export class AppService {
     return response;
   }
 
-  async captioning(file: Express.Multer.File) {
-    const API_TOKEN = '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';
+  async captioning(imageUrl: string) {
+    const API_TOKEN = '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';
 
-    async function query(file) {
+    console.log(imageUrl);
+
+    const imageres = await fetch(imageUrl);
+    const imageBlob = await imageres.blob();
+    // 파일을 FormData에 추가
+    async function query(imageBlob) {
       // 파일을 FormData에 추가
 
       const response = await fetch(
         'https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning',
         {
-          headers: { Authorization: `Bearer ${API_TOKEN}` },
+          headers: {
+            Authorization: `Bearer ${API_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
           method: 'POST',
-          body: file,
+          body: imageBlob,
         },
       );
+
       const result = await response.json();
       return result;
     }
 
-    query(file).then((response) => {
+    query(imageBlob).then((response) => {
       const result = JSON.stringify(response);
 
       console.log(result);
@@ -210,7 +219,7 @@ export class AppService {
 
     // console.log('finalAnswer', finalAnswer);
 
-    return JSON.stringify(res);
+    return res.answer;
   }
 
   async fileUpload(file: Express.Multer.File) {
@@ -230,8 +239,8 @@ export class AppService {
     try {
       const result = await upload.done();
       // console.log('File uploaded:', result.Location);
-      const captioningText = await this.captioning(file);
-      console.log(captioningText);
+      const captioningText = await this.captioning(result.Location);
+      // console.log(captioningText);
 
       return { imgUrl: result.Location, message: 'caption 결과' };
     } catch (error) {
