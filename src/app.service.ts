@@ -30,7 +30,7 @@ export class AppService {
   async visualQuestionAnswering(imageUrl: string, question: string) {
     const inference = new HfInference('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');
     const vqa = inference.endpoint(
-      'https://g8a7fnx4995stodw.us-east-1.aws.endpoints.huggingface.cloud',
+      'https://pmv2sq2r47wtie5t.us-east-1.aws.endpoints.huggingface.cloud',
     );
 
     const imageres = await fetch(imageUrl);
