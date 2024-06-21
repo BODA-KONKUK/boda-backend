@@ -27,33 +27,15 @@ export class AppService {
 
   private s3Client: S3Client;
 
-  async query(data: string): Promise<any> {
-    const API_TOKEN = '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';
-
-    const response = await fetch(
-      'https://api-inference.huggingface.co/models/gpt2',
-      {
-        headers: { Authorization: `Bearer ${API_TOKEN}` },
-        method: 'POST',
-        body: JSON.stringify(data),
-      },
-    );
-
-    const result = response.json();
-
-    return result;
-  }
-
   async visualQuestionAnswering(imageUrl: string, question: string) {
     const inference = new HfInference('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');
     const vqa = inference.endpoint(
       'https://g8a7fnx4995stodw.us-east-1.aws.endpoints.huggingface.cloud',
     );
 
-    // const imageUrl =
-    //   'https://boda-bucket.s3.ap-northeast-2.amazonaws.com/uploads/cat.png';
     const imageres = await fetch(imageUrl);
     const imageBlob = await imageres.blob();
+    console.log(question);
 
     const response = await vqa.visualQuestionAnswering({
       inputs: {
@@ -63,6 +45,41 @@ export class AppService {
     });
 
     return response;
+  }
+
+  async captioning(file: Express.Multer.File) {
+    const API_TOKEN = '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';
+
+    async function query(file) {
+      // 파일을 FormData에 추가
+
+      const response = await fetch(
+        'https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning',
+        {
+          headers: { Authorization: `Bearer ${API_TOKEN}` },
+          method: 'POST',
+          body: file,
+        },
+      );
+      const result = await response.json();
+      return result;
+    }
+
+    query(file).then((response) => {
+      const result = JSON.stringify(response);
+
+      console.log(result);
+
+      return result;
+    });
+  }
+
+  extractTranslatedText(response) {
+    const startMarker = "'";
+    const endMarker = "'\n";
+    const startIndex = response.indexOf(startMarker) + startMarker.length;
+    const endIndex = response.indexOf(endMarker, startIndex);
+    return response.substring(startIndex, endIndex);
   }
 
   async korToEng(questionInKor: string) {
@@ -97,11 +114,12 @@ export class AppService {
     }
 
     return await query({
-      inputs: `Translate into English in a sentence: '${questionInKor}'. Respond with only "The Answer is: " followed by the translation and nothing else.' 
+      inputs: `Translate into English in a sentence: '${questionInKor}'
       `,
     })
       .then((response) => {
-        // console.log(JSON.stringify(response));
+        console.log(response);
+        // console.log(this.extractTranslatedText(response));
         return response;
       })
       .catch((error) => {
@@ -141,7 +159,7 @@ export class AppService {
     }
 
     return await query({
-      inputs: `Translate into Korean: "${questionInEng}". Respond with only "The Answer is: " followed by the translation and nothing else.`,
+      inputs: `Translate into Korean: "${questionInEng}"`,
     })
       .then((response) => {
         // console.log(JSON.stringify(response));
@@ -153,44 +171,46 @@ export class AppService {
   }
 
   async vqa(imgUrl: string, question: string): Promise<string> {
-    const questionInKor = `${question}`;
-    // 한글 -> 영어
-    const engText = await this.korToEng(questionInKor);
+    // const questionInKor = `${question}`;
+    // // 한글 -> 영어
+    // const engText = await this.korToEng(questionInKor);
 
+    // const answerPrefix1 = 'The Answer is: ';
+    // const generatedText1 = engText[0].generated_text;
+    // const answerIndex1 =
+    //   generatedText1.lastIndexOf(answerPrefix1) + answerPrefix1.length;
+    // const finalAnswer1 = generatedText1.substring(answerIndex1).trim();
+
+    // // 따옴표 사이의 텍스트를 추출하는 부분
+    // const startQuoteIndex1 = finalAnswer1.indexOf('"') + 1;
+    // const endQuoteIndex1 = finalAnswer1.lastIndexOf('"');
+    // const engQuestion = finalAnswer1.substring(
+    //   startQuoteIndex1,
+    //   endQuoteIndex1,
+    // );
+    // console.log(engQuestion);
+
+    const res = await this.visualQuestionAnswering(imgUrl, question);
+    console.log('answer', JSON.stringify(res));
+
+    // const answerText = res.answer;
+    // const startQuoteIndex = answerText.indexOf('"') + 1;
+    // const endQuoteIndex = answerText.indexOf('"', startQuoteIndex);
+    // const result = answerText.substring(startQuoteIndex, endQuoteIndex);
+
+    // console.log('result', result);
+
+    // const korAnswer = await this.engToKor(result);
+    // console.log(korAnswer);
     // const answerPrefix = 'The Answer is: ';
-    // const generatedText = korText[0].generated_text;
+    // const generatedText = korAnswer[0].generated_text;
     // const answerIndex =
     //   generatedText.lastIndexOf(answerPrefix) + answerPrefix.length;
     // const finalAnswer = generatedText.substring(answerIndex).trim();
 
-    // // 따옴표 사이의 텍스트를 추출하는 부분
-    // const startQuoteIndex = finalAnswer.indexOf('"') + 1;
-    // const endQuoteIndex = finalAnswer.lastIndexOf('"');
-    // const result = finalAnswer.substring(startQuoteIndex, endQuoteIndex);
-    // console.log(result);
+    // console.log('finalAnswer', finalAnswer);
 
-    const res = await this.visualQuestionAnswering(imgUrl, engText);
-    console.log('answer', JSON.stringify(res));
-
-    const answerText = res.answer;
-    const startQuoteIndex = answerText.indexOf('"') + 1;
-    const endQuoteIndex = answerText.indexOf('"', startQuoteIndex);
-    const result = answerText.substring(startQuoteIndex, endQuoteIndex);
-
-    console.log('result', result);
-
-    const korAnswer = await this.engToKor(result);
-    console.log(korAnswer);
-    const answerPrefix = 'The Answer is: ';
-    const generatedText = korAnswer[0].generated_text;
-    const answerIndex =
-      generatedText.lastIndexOf(answerPrefix) + answerPrefix.length;
-    const finalAnswer = generatedText.substring(answerIndex).trim();
-
-    console.log('finalAnswer', finalAnswer);
-
-    // TODO: 영어 -> 한글
-    return finalAnswer;
+    return JSON.stringify(res);
   }
 
   async fileUpload(file: Express.Multer.File) {
@@ -210,7 +230,8 @@ export class AppService {
     try {
       const result = await upload.done();
       // console.log('File uploaded:', result.Location);
-      // TODO: captioning 연결
+      const captioningText = await this.captioning(file);
+      console.log(captioningText);
 
       return { imgUrl: result.Location, message: 'caption 결과' };
     } catch (error) {
