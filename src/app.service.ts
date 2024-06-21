@@ -48,10 +48,11 @@ export class AppService {
   }
 
   async captioning(imageUrl: string) {
-    const API_TOKEN = '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';
+    const API_TOKEN = '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';
 
     const imageres = await fetch(imageUrl);
     const imageBlob = await imageres.blob();
+
     async function query(imageBlob) {
       const response = await fetch(
         'https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning',
@@ -69,10 +70,8 @@ export class AppService {
       return result;
     }
 
-    query(imageBlob).then((response) => {
+    return query(imageBlob).then((response) => {
       const result = response[0];
-
-      console.log(result);
 
       return result.generated_text;
     });
@@ -235,9 +234,7 @@ export class AppService {
       const result = await upload.done();
       // console.log('File uploaded:', result.Location);
       const captioningText = await this.captioning(result.Location);
-
-      // const captioningText = await this.captioning(result.Location);
-      // console.log(captioningText);
+      console.log(captioningText);
 
       return { imgUrl: result.Location, message: captioningText };
     } catch (error) {
