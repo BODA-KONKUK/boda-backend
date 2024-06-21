@@ -219,7 +219,7 @@ export class AppService {
 
     // console.log('finalAnswer', finalAnswer);
 
-    return res.answer;
+    return res.answer.replace('\n', '');
   }
 
   async fileUpload(file: Express.Multer.File) {
