@@ -72,6 +72,7 @@ export class AppService {
 
     return query(imageBlob).then((response) => {
       const result = response[0];
+      console.log('responseresult', response[0]);
 
       return result.generated_text;
     });
