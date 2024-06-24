@@ -27,24 +27,57 @@ export class AppService {
 
   private s3Client: S3Client;
 
-  async visualQuestionAnswering(imageUrl: string, question: string) {
+  async visualQuestionAnswering(imageUrl, question) {
     const inference = new HfInference('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');
     const vqa = inference.endpoint(
       'https://pkdc7xkzxfjeygsg.us-east-1.aws.endpoints.huggingface.cloud',
     );
+    const alternateModel = inference.endpoint(
+      'https://pmv2sq2r47wtie5t.us-east-1.aws.endpoints.huggingface.cloud',
+    );
+    const timeoutDuration = 15000;
 
     const imageres = await fetch(imageUrl);
     const imageBlob = await imageres.blob();
     console.log(question);
 
-    const response = await vqa.visualQuestionAnswering({
-      inputs: {
-        question: question,
-        image: imageBlob,
-      },
-    });
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(async () => {
+        try {
+          console.log('Switching to alternate model due to timeout');
+          const response = await alternateModel.visualQuestionAnswering({
+            inputs: {
+              question: question,
+              image: imageBlob,
+            },
+          });
+          resolve(response);
+        } catch (error) {
+          console.error(
+            'Error during fetching or parsing from alternate model:',
+            error,
+          );
+          reject(error);
+        }
+      }, timeoutDuration);
 
-    return response;
+      vqa
+        .visualQuestionAnswering({
+          inputs: {
+            question: question,
+            image: imageBlob,
+          },
+        })
+        .then((response) => {
+          clearTimeout(timeout);
+          resolve(response);
+        })
+        .catch((error) => {
+          console.error('Error during fetching or parsing:', error);
+          clearTimeout(timeout);
+          reject(error);
+        });
+    });
   }
 
   async captioning(imageUrl: string) {
