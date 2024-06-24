@@ -27,7 +27,7 @@ export class AppService {
 
   private s3Client: S3Client;
 
-  async visualQuestionAnswering(imageUrl, question) {
+  async visualQuestionAnswering(imageUrl, question): Promise<any> {
     const inference = new HfInference('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');
     const vqa = inference.endpoint(
       'https://pkdc7xkzxfjeygsg.us-east-1.aws.endpoints.huggingface.cloud',
@@ -51,7 +51,16 @@ export class AppService {
               image: imageBlob,
             },
           });
-          resolve(response);
+          // response의 타입을 명시적으로 지정합니다.
+          if (
+            response &&
+            typeof response === 'object' &&
+            'answer' in response
+          ) {
+            resolve(response.answer.replace('\n', ''));
+          } else {
+            reject(new Error('Invalid response format'));
+          }
         } catch (error) {
           console.error(
             'Error during fetching or parsing from alternate model:',
@@ -70,7 +79,16 @@ export class AppService {
         })
         .then((response) => {
           clearTimeout(timeout);
-          resolve(response);
+          // response의 타입을 명시적으로 지정합니다.
+          if (
+            response &&
+            typeof response === 'object' &&
+            'answer' in response
+          ) {
+            resolve(response.answer.replace('\n', ''));
+          } else {
+            reject(new Error('Invalid response format'));
+          }
         })
         .catch((error) => {
           console.error('Error during fetching or parsing:', error);
