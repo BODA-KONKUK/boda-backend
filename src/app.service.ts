@@ -32,70 +32,19 @@ export class AppService {
     const vqa = inference.endpoint(
       'https://b3g5s4adsa4ng48i.us-east-1.aws.endpoints.huggingface.cloud',
     );
-    const alternateModel = inference.endpoint(
-      'https://pmv2sq2r47wtie5t.us-east-1.aws.endpoints.huggingface.cloud',
-    );
-    const timeoutDuration = 15000;
 
     const imageres = await fetch(imageUrl);
     const imageBlob = await imageres.blob();
     console.log(question);
 
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(async () => {
-        try {
-          console.log('Switching to alternate model due to timeout');
-          const response = await alternateModel.visualQuestionAnswering({
-            inputs: {
-              question: question,
-              image: imageBlob,
-            },
-          });
-          // response의 타입을 명시적으로 지정합니다.
-          if (
-            response &&
-            typeof response === 'object' &&
-            'answer' in response
-          ) {
-            resolve(response.answer.replace('\n', ''));
-          } else {
-            reject(new Error('Invalid response format'));
-          }
-        } catch (error) {
-          console.error(
-            'Error during fetching or parsing from alternate model:',
-            error,
-          );
-          reject(error);
-        }
-      }, timeoutDuration);
-
-      vqa
-        .visualQuestionAnswering({
-          inputs: {
-            question: question,
-            image: imageBlob,
-          },
-        })
-        .then((response) => {
-          clearTimeout(timeout);
-          // response의 타입을 명시적으로 지정합니다.
-          if (
-            response &&
-            typeof response === 'object' &&
-            'answer' in response
-          ) {
-            resolve(response.answer.replace('\n', ''));
-          } else {
-            reject(new Error('Invalid response format'));
-          }
-        })
-        .catch((error) => {
-          console.error('Error during fetching or parsing:', error);
-          clearTimeout(timeout);
-          reject(error);
-        });
+    const response = await vqa.visualQuestionAnswering({
+      inputs: {
+        question: question,
+        image: imageBlob,
+      },
     });
+
+    return response;
   }
 
   async captioning(imageUrl: string) {
