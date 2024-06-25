@@ -170,7 +170,10 @@ export class AppService {
       const captioningText = await this.captioning(result.Location);
       console.log(captioningText);
 
-      return { imgUrl: result.Location, message: captioningText };
+      return {
+        imgUrl: result.Location,
+        message: (captioningText as string).replace('\n', ''),
+      };
     } catch (error) {
       console.error('Error uploading file:', error);
       throw error;
