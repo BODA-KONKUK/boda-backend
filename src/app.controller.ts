@@ -2,6 +2,7 @@ import {
   Body,
   // Body,
   Controller,
+  Get,
   // Param,
   // Patch,
   Post,
@@ -15,11 +16,12 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  // @Get()
-  // async getHello(): Promise<string> {
-  //   console.log('getHello 요청');
-  //   return this.appService.getHello('gi', 'what is he doing?');
-  // }
+  @Get()
+  async getHello(): Promise<string> {
+    console.log('getHello 요청');
+
+    return 'health check';
+  }
 
   // 질의 응답
   @Post('/question')
